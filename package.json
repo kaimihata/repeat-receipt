@@ -17,9 +17,10 @@
     "@react-navigation/web": "^1.0.0-alpha.9",
     "expo": "^35.0.0",
     "expo-asset": "^7.0.0",
-    "expo-constants": "^7.0.0",
+    "expo-constants": "~7.0.0",
     "expo-font": "^7.0.0",
     "expo-web-browser": "^7.0.0",
+    "firebase": "^7.2.0",
     "react": "16.8.3",
     "react-dom": "16.8.3",
     "react-native": "https://github.com/expo/react-native/archive/sdk-35.0.0.tar.gz",
@@ -30,7 +31,24 @@
   },
   "devDependencies": {
     "babel-preset-expo": "^7.0.0",
+    "eslint": "^6.5.1",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
     "jest-expo": "^35.0.0"
   },
-  "private": true
+  "private": true,
+  "name": "repeat-receipt",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaimihata/repeat-receipt.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kaimihata/repeat-receipt/issues"
+  },
+  "homepage": "https://github.com/kaimihata/repeat-receipt#readme",
+  "description": ""
 }
