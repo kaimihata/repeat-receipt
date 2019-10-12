@@ -12,3 +12,4 @@ web-report/
 .eslintrc.js
 *.code-workspace
 /app/environment.js
+*.xd
