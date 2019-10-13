@@ -38,9 +38,14 @@ export class ItemContainer extends React.Component {
     this.fillItems();
   }
 
+  componentWillReceiveProps(props) {
+    this.fillItems();
+  }
+
   fillItems() {
     var currentItems = [];
-    firestore.collection("user1").get().then((queryItems) => {
+    const { currentUser } = firebase.auth();
+    firestore.collection(currentUser.uid).get().then((queryItems) => {
       queryItems.forEach((item) => {
         currentItems.push(item)
       });
@@ -83,7 +88,7 @@ export class ItemBox extends React.Component {
   render() {
     return (
       <View style={{
-        backgroundColor:"lightgrey", borderRadius:10, padding:10, margin:7,
+        backgroundColor:"white", borderRadius:10, padding:10, margin:7,
         shadowColor:"grey", shadowOffset:{width:1,height:1}, shadowOpacity:10, shadowRadius:5
       }}>
         <Text style={{fontWeight: "bold"}}>{this.props.item.id}:</Text>

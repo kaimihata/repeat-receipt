@@ -7,19 +7,52 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  StyleSheet,
+  Dimensions,
+  Modal,
+  TouchableHighlight,
+  TouchableWithoutFeedback,
 } from 'react-native'
+import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
 import { RNCamera } from 'react-native-camera';
-import { Ionicons } from '@expo/vector-icons';
 import * as Permissions from 'expo-permissions';
 import firebase from '../firebase';
 import getEnvVars from '../environment';
 import uuid from 'uuid';
 import * as keywords from '../assets/keywords/keywords.json';
 import addToFirestore from '../actions/addToFirestore';
+import { white } from 'ansi-colors';
+import { withNavigation } from 'react-navigation';
+import { MaterialIndicator } from 'react-native-indicators';
 
-export default class CameraScreen extends React.Component {
+const win = Dimensions.get('window');
+
+const styles = StyleSheet.create({
+  tabBarInfoContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    ...Platform.select({
+      ios: {
+        shadowColor: 'black',
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 20,
+      },
+    }),
+    alignItems: 'center',
+    backgroundColor: '#fbfbfb',
+    paddingVertical: 20,
+  }
+})
+
+class CameraScreen extends React.Component {
   state = {
     image: null,
     uploading: false,
@@ -27,6 +60,8 @@ export default class CameraScreen extends React.Component {
     itemObjects: null,
     type: Camera.Constants.Type.back,
     takingPhoto: false,
+    analyzing: false,
+    modalVisible: false,
   }
 
   async componentDidMount() {
@@ -36,28 +71,120 @@ export default class CameraScreen extends React.Component {
   }
 
   render() {
-    let { image, itemObjects, type, uploading, takingPhoto } = this.state;
+    let { image, itemObjects, type, uploading, takingPhoto, analyzing } = this.state;
     if (takingPhoto) {
       return (
-        <View>
-          <ActivityIndicator />
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <ActivityIndicator size="large" />
         </View>
       )
     } else if (image) {
       return (
-        <View>
-          <Button
-          onPress={this.retake}
-          title={"Retake Photo"}
+        <View style={{
+          flex: 1,
+          alignItems: 'center',
+        }}>
+          <Image source={{ uri: image }}
+            style={{
+              flex: 1,
+              alignSelf: 'stretch',
+              width: win.width,
+              height: win.height,
+            }} />
+          {/* {itemObjects && <Text>{JSON.stringify(itemObjects)}</Text>} */}
+          <Ionicons
+            name={'ios-close'}
+            size={80}
+            color='#ffffff'
+            style={{
+              position: 'absolute',
+              top: -10,
+              left: 0,
+              padding: 10,
+            }}
+            onPress={this.retake}
           />
-          <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />
-          <Button onPress={this.gcpAnalyze} title='ANALYZE'/>
-          {itemObjects && <Text>{JSON.stringify(itemObjects)}</Text>}
+          {analyzing && <MaterialIndicator
+            style={{
+              position: 'absolute',
+              top: win.height/2,
+            }}
+            color='white'
+          />}
+          
+          <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            flexDirection: 'row',
+            bottom: 0,
+            position: 'absolute'
+          }}>
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#32CD32',
+                width: win.width,
+                padding: 15,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              onPress={this.gcpAnalyze}
+            >
+              <Text style={{ fontSize: 30, color: '#ffffff', textDecorationLine: 'underline' }}>Analyze</Text>
+            </TouchableOpacity>
+            {/* <TouchableOpacity
+              style={{
+                backgroundColor: '#78C5EF',
+                padding: 10,
+                margin: 10,
+                borderRadius: 5,
+              }}
+              onPress={this.retake}
+            >
+              <Text>Retake Photo</Text>
+            </TouchableOpacity> */}
+          </View>
         </View>
       );
     } else {
       return (
         <View style={{ flex: 1 }}>
+          <Modal
+            animationType="slide"
+            transparent
+            visible={this.state.modalVisible}
+            onRequestClose={() => {
+              Alert.alert('Modal has been closed.');
+            }}>
+            <TouchableOpacity
+            style={{
+              width: win.width,
+              height: win.height,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onPressOut={() => this.setState({ modalVisible: false })}
+            >
+              <TouchableWithoutFeedback>
+                <View style={{
+                  marginTop: 22,
+                  width: '70%',
+                  height: '12%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#ffffff',
+                  borderRadius: 15,
+                }}>
+                  <View>
+                    <Text style={{ fontSize: 20 }}>Couldn't detect any text!</Text>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </TouchableOpacity>
+          </Modal>
           {!image && <Camera style={{ flex: 1 }} type={this.state.type}
             ref={ref => {
               this.camera = ref;
@@ -66,11 +193,10 @@ export default class CameraScreen extends React.Component {
               style={{
                 flex: 1,
                 backgroundColor: 'transparent',
-                flexDirection: 'row',
+                justifyContent: 'space-between',
               }}>
               <TouchableOpacity
                 style={{
-                  flex: 0.1,
                   alignSelf: 'flex-end',
                   alignItems: 'center',
                 }}
@@ -82,17 +208,30 @@ export default class CameraScreen extends React.Component {
                         : Camera.Constants.Type.back,
                   });
                 }}>
-                <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}> Flip </Text>
+                <Ionicons
+                  name={'ios-repeat'}
+                  style={{ padding: 10 }}
+                  size={40}
+                  color={'#ffffff'}
+                />
               </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  flex: 0.1,
-                  alignSelf: 'flex-start',
-                  alignItems: 'center',
-                }}
-                onPress={this.snap.bind(this)}>
-                <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}> Snap </Text>
-              </TouchableOpacity>
+              <View style={{ alignItems: 'center' }}>
+                <TouchableOpacity
+                  style={{
+                    justifyContent: 'flex-end',
+                    alignSelf: 'center',
+                    alignItems: 'center',
+                  }}
+                  onPress={this.snap.bind(this)}>
+                  <Ionicons
+                    name={'ios-radio-button-off'}
+                    style={{ padding: 10 }}
+                    size={80}
+                    color={'#ffffff'}
+                  />
+                </TouchableOpacity>
+              </View>
+
             </View>
           </Camera>}
         </View>
@@ -115,18 +254,22 @@ export default class CameraScreen extends React.Component {
     }
   }
 
-  takePhoto = async () => {
-    this.setState({ uploading: true });
-    let pickerResult = await ImagePicker.launchCameraAsync({
-      aspect: [4, 3]
-    });
-    if (!pickerResult.cancelled) {
-      uploadUrl = await this.uploadImageAsync(pickerResult.uri);
-      this.setState({ image: uploadUrl });
-    }
-    this.setState({ uploading: false });
-  }
+  // takePhoto = async () => {
+  //   this.setState({ uploading: true });
+  //   let pickerResult = await ImagePicker.launchCameraAsync({
+  //     aspect: [4, 3]
+  //   });
+  //   if (!pickerResult.cancelled) {
+  //     uploadUrl = await this.uploadImageAsync(pickerResult.uri);
+  //     this.setState({ image: uploadUrl });
+  //   }
+  //   this.setState({ uploading: false });
+  // }
 
+  setModalVisible = (visible) => {
+    this.setState({ modalVisible: visible });
+  }
+  
   retake = () => {
     this.setState({ image: null });
   }
@@ -136,10 +279,10 @@ export default class CameraScreen extends React.Component {
   uploadImageAsync = async (uri) => {
     const blob = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.onload = function() {
+      xhr.onload = function () {
         resolve(xhr.response);
       };
-      xhr.onerror = function(e) {
+      xhr.onerror = function (e) {
         console.log(e);
         reject(new TypeError('Network request failed'));
       };
@@ -157,7 +300,7 @@ export default class CameraScreen extends React.Component {
 
   gcpAnalyze = async () => {
     try {
-      this.setState({ uploading: true });
+      this.setState({ uploading: true, analyzing: true });
       let { image } = this.state;
       let body = JSON.stringify({
         requests: [
@@ -217,6 +360,11 @@ export default class CameraScreen extends React.Component {
     let sumDeltaY = 0;
     let numWords = 0;
     for (n = 0; n < test.length; n++) {
+      if (test[n] == null || test[n]['fullTextAnnotation'] == null || test[n]['fullTextAnnotation']['pages'] == null) {
+        this.setState({ analyzing: false, modalVisible: true });
+        this.retake();
+        return;
+      }
       let resp = test[n]['fullTextAnnotation']['pages'];
       for (m = 0; m < resp.length; m++) {
         let page = resp[m]['blocks'];
@@ -249,18 +397,19 @@ export default class CameraScreen extends React.Component {
     }
     // console.log(words);
     items = this.groupLines(words, (sumDeltaY / numWords) / 2);
-    this.setState({ itemObjects: items });
-    addToFirestore({ items });
+    this.setState({ itemObjects: items, analyzing: false });
+    addToFirestore({ items }, (v) => this.props.navigation.navigate(v), "Settings");
   }
 
+
   groupLines(data, margin) {
-    data.sort((a,b) => {
+    data.sort((a, b) => {
       return a.avgY - b.avgY;
     });
 
     let lines = [];
     let skip = new Set([]);
-    for(i = 0; i < data.length; i++) {
+    for (i = 0; i < data.length; i++) {
       if (!skip.has(i)) {
         let l = [];
         l.push(data[i]);
@@ -273,7 +422,7 @@ export default class CameraScreen extends React.Component {
             }
           }
         }
-        l.sort((a,b) => {
+        l.sort((a, b) => {
           return a.avgX - b.avgX;
         });
         lines.push(l);
@@ -346,7 +495,7 @@ export default class CameraScreen extends React.Component {
   }
 
   computeAverageY(vertices) {
-    return (vertices[0].y + vertices[1].y + vertices[2].y + vertices[3].y)/4;
+    return (vertices[0].y + vertices[1].y + vertices[2].y + vertices[3].y) / 4;
   }
 
   computeAverageX(vertices) {
@@ -381,7 +530,7 @@ export default class CameraScreen extends React.Component {
     if (contains) {
       return null;
     }
-    
+
     var point = arr.findIndex((element) => {
       return element.text === '.';
     });
@@ -395,7 +544,7 @@ export default class CameraScreen extends React.Component {
     var point = arr.findIndex((element) => {
       return element.text === '/';
     });
-    if (point < arr.length -  3 && point > 0) {
+    if (point < arr.length - 3 && point > 0) {
       if (arr[point + 2].text === '/') {
         return arr[point - 1].text + '/' + arr[point + 1].text + '/' + arr[point + 3].text;
       }
@@ -471,3 +620,5 @@ export default class CameraScreen extends React.Component {
     return newObj;
   }
 }
+
+export default withNavigation(CameraScreen);

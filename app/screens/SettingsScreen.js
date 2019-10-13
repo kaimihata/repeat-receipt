@@ -1,4 +1,5 @@
 import React from 'react';
+import { View } from 'react-native';
 import DataScreen from './DataScreen';
 import { ExpoConfigView } from '@expo/samples';
 
@@ -8,7 +9,9 @@ export default function SettingsScreen() {
    * we just wanted to give you a quick view of your config.
    */
   return (
-    <DataScreen />
+    <View>
+      <DataScreen />
+    </View>
   );
 }
 
