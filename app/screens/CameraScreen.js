@@ -4,8 +4,14 @@ import {
   View,
   Button,
   Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  Platform,
 } from 'react-native'
 import * as ImagePicker from 'expo-image-picker';
+import { Camera } from 'expo-camera';
+import { RNCamera } from 'react-native-camera';
+import { Ionicons } from '@expo/vector-icons';
 import * as Permissions from 'expo-permissions';
 import firebase from '../firebase';
 import getEnvVars from '../environment';
@@ -19,29 +25,98 @@ export default class CameraScreen extends React.Component {
     uploading: false,
     gcpResponse: null,
     itemObjects: null,
+    type: Camera.Constants.Type.back,
+    takingPhoto: false,
   }
 
   async componentDidMount() {
     await Permissions.askAsync(Permissions.CAMERA_ROLL);
     await Permissions.askAsync(Permissions.CAMERA);
+    await Permissions.askAsync(Permissions.AUDIO_RECORDING);
   }
 
   render() {
-    let { image, itemObjects } = this.state;
-    return (
-      <View>
-        <Button
-          onPress={this.takePhoto}
-          title='Take a Picture'
-        />
-        {image && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}
-        {image && <Button onPress={this.gcpAnalyze} title='ANALYZE'/>}
-        {itemObjects && <Text>{JSON.stringify(itemObjects)}</Text>}
-      </View>
-    );
+    let { image, itemObjects, type, uploading, takingPhoto } = this.state;
+    if (takingPhoto) {
+      return (
+        <View>
+          <ActivityIndicator />
+        </View>
+      )
+    } else if (image) {
+      return (
+        <View>
+          <Button
+          onPress={this.retake}
+          title={"Retake Photo"}
+          />
+          <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />
+          <Button onPress={this.gcpAnalyze} title='ANALYZE'/>
+          {itemObjects && <Text>{JSON.stringify(itemObjects)}</Text>}
+        </View>
+      );
+    } else {
+      return (
+        <View style={{ flex: 1 }}>
+          {!image && <Camera style={{ flex: 1 }} type={this.state.type}
+            ref={ref => {
+              this.camera = ref;
+            }}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'transparent',
+                flexDirection: 'row',
+              }}>
+              <TouchableOpacity
+                style={{
+                  flex: 0.1,
+                  alignSelf: 'flex-end',
+                  alignItems: 'center',
+                }}
+                onPress={() => {
+                  this.setState({
+                    type:
+                      this.state.type === Camera.Constants.Type.back
+                        ? Camera.Constants.Type.front
+                        : Camera.Constants.Type.back,
+                  });
+                }}>
+                <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}> Flip </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  flex: 0.1,
+                  alignSelf: 'flex-start',
+                  alignItems: 'center',
+                }}
+                onPress={this.snap.bind(this)}>
+                <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}> Snap </Text>
+              </TouchableOpacity>
+            </View>
+          </Camera>}
+        </View>
+      );
+    }
+  }
+
+  async snap() {
+    if (this.camera) {
+      this.setState({ takingPhoto: true });
+      const options = {
+        quality: 1, base64: true, fixOrientation: true,
+        exif: true
+      };
+      await this.camera.takePictureAsync(options).then(async photo => {
+        photo.exif.Orientation = 1;
+        uploadUrl = await this.uploadImageAsync(photo.uri);
+        this.setState({ image: uploadUrl, takingPhoto: false });
+      });
+    }
   }
 
   takePhoto = async () => {
+    this.setState({ uploading: true });
     let pickerResult = await ImagePicker.launchCameraAsync({
       aspect: [4, 3]
     });
@@ -49,8 +124,12 @@ export default class CameraScreen extends React.Component {
       uploadUrl = await this.uploadImageAsync(pickerResult.uri);
       this.setState({ image: uploadUrl });
     }
+    this.setState({ uploading: false });
   }
 
+  retake = () => {
+    this.setState({ image: null });
+  }
   // storeData = async () = {
   //   fireb
   // }
@@ -108,7 +187,7 @@ export default class CameraScreen extends React.Component {
         }
       );
       let responseJSON = response.json().then((resp) => {
-        // console.log(resp);
+        console.log(resp);
         this.processOCR(resp);
       });
       // console.log(responseJSON);
