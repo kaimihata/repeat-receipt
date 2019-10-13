@@ -48,7 +48,7 @@ LinksStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon 
       text='(|O|)'
-      focused={focused} name={Platform.OS === 'ios' ? 'ios-link' : 'md-link'} />
+      focused={focused} name={Platform.OS === 'ios' ? 'ios-camera' : 'md-camera'} />
   ),
 };
 
@@ -66,7 +66,7 @@ SettingsStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon 
       text='='
-      focused={focused} name={Platform.OS === 'ios' ? 'ios-options' : 'md-options'} />
+      focused={focused} name={Platform.OS === 'ios' ? 'ios-list' : 'md-list'} />
   ),
 };
 

@@ -14,7 +14,7 @@ export default function LinksScreen() {
 }
 
 LinksScreen.navigationOptions = {
-  title: 'Links',
+  title: 'Scan Receipt',
 };
 
 const styles = StyleSheet.create({
