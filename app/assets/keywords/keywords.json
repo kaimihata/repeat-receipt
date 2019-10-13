@@ -32,6 +32,11 @@
     "savings",
     "cashless",
     "balance",
-    "visa"
+    "visa",
+    "amount",
+    "transaction",
+    "payment",
+    "price",
+    "card"
   ]
 }
