@@ -1,31 +1,15 @@
 import React, { Component } from 'react';
 import { View, Text} from 'react-native';
 import firebase, {firestore} from '../firebase';
+import {addDefaultData} from '../actions/addToFirestore';
 
 export default class DataScreen extends React.Component {
   state = {
     priceTest: null,
   }
   
-  async componentDidMount() {
-    this.showAllItems();
-  }
-
-  showAllItems() {
-    var item = firestore.collection("user").doc("item1").collection("purchaseInstances").doc("instance1");
-    item.get().then((doc) => {
-        if (doc.exists) {
-          this.setState({priceTest: doc.data().price});
-        } else {
-          // doc.data() will be undefined in this case
-          console.log("No such document!");
-        }
-    }).catch((error) => {
-        console.log("Error getting document:", error);
-    });
-  }
-  
   render() {
+    addDefaultData();
     return (
       <View>
         {/* <Text>{this.state.priceTest}</Text> */}
@@ -46,7 +30,7 @@ class ItemContainer extends React.Component {
 
   fillItems() {
     var currentItems = [];
-    firestore.collection("user").get().then((queryItems) => {
+    firestore.collection("user1").get().then((queryItems) => {
       queryItems.forEach((item) => {
         currentItems.push(<ItemBox key={item.id} item={item} />)
       });
@@ -66,12 +50,11 @@ class ItemBox extends React.Component {
   
   componentDidMount() {
     var currentInstances = [];
-    this.props.item.ref.collection("purchaseInstances").get().then((purchaseInstances) => {
-      purchaseInstances.forEach((instance) => {
-        currentInstances.push(<Instance instance={instance} />);
-      });
-      this.setState({instances: currentInstances});
+    // this.props.item.ref.collection("purchaseInstances").get().then((purchaseInstances) => {
+    this.props.item.get("instances").forEach((instance) => {
+      currentInstances.push(<Instance instance={instance} key={JSON.stringify(instance)}/>);
     });
+    this.setState({instances: currentInstances});
   }
 
   render() {
@@ -87,6 +70,6 @@ class ItemBox extends React.Component {
 
 class Instance extends React.Component {
   render() {
-    return <Text>{JSON.stringify(this.props.instance.data())}</Text>;
+    return <Text>{JSON.stringify(this.props.instance)}</Text>;
   }
 }

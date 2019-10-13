@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "name": "ORG APPLES",
+      "instances": [
+        {
+          "date": "10/10/19",
+          "location": "HMart",
+          "price": 4.99
+        },
+        {
+          "date": "10/12/19",
+          "location": "QFC",
+          "price": 6.99
+        },
+        {
+          "date": "10/8/19",
+          "location": "Safeway",
+          "price": 5.99
+        }
+      ]
+    },
+    {
+      "name": "CRM MUSHRMS",
+      "instances": [
+        {
+          "date": "10/10/19",
+          "location": "Safeway",
+          "price": 4.99
+        }
+      ]
+    }
+  ]
+}
