@@ -5,8 +5,6 @@ import {
   View,
   Button,
 } from 'react-native';
-
-import './CameraScreen';
 import CameraScreen from './CameraScreen';
 
 export default function LinksScreen() {

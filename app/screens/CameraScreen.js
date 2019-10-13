@@ -7,6 +7,7 @@ import {
 } from 'react-native'
 import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
+import firebase, {firestore} from '../firebase';
 
 export default class CameraScreen extends React.Component {
   state = {
@@ -39,4 +40,8 @@ export default class CameraScreen extends React.Component {
       this.setState({ image: pickerResult.uri });
     }
   }
+
+  // storeData = async () = {
+  //   fireb
+  // }
 }
