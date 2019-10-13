@@ -4,15 +4,10 @@ import firebase, {firestore} from '../firebase';
 import {addDefaultData} from '../actions/addToFirestore';
 
 export default class DataScreen extends React.Component {
-  state = {
-    priceTest: null,
-  }
-  
   render() {
     addDefaultData();
     return (
       <View>
-        {/* <Text>{this.state.priceTest}</Text> */}
         <ItemContainer />
       </View>
     );
@@ -32,14 +27,16 @@ class ItemContainer extends React.Component {
     var currentItems = [];
     firestore.collection("user1").get().then((queryItems) => {
       queryItems.forEach((item) => {
-        currentItems.push(<ItemBox key={item.id} item={item} />)
+        currentItems.push(<ItemBox key={item.id} item={item}/>)
       });
       this.setState({items: currentItems});
     });
   }
   
   render() {
-    return <View>{this.state.items}</View>;
+    return <View style={{flexDirection:'column', justifyContent:"space-between", padding:7}}>
+      {this.state.items}
+    </View>;
   }
 }
 
@@ -52,17 +49,22 @@ class ItemBox extends React.Component {
     var currentInstances = [];
     // this.props.item.ref.collection("purchaseInstances").get().then((purchaseInstances) => {
     this.props.item.get("instances").forEach((instance) => {
-      currentInstances.push(<Instance instance={instance} key={JSON.stringify(instance)}/>);
+      currentInstances.push(instance);
     });
-    this.setState({instances: currentInstances});
+    this.setState({instances: currentInstances.sort((a,b) => a["price"] - b["price"])
+      .map((e) => <Instance instance={e} key={JSON.stringify(e)}/>)});
   }
 
   render() {
     return (
-      <View>
+      <View style={{
+        backgroundColor:"lightgrey", borderRadius:10, padding:10, margin:7,
+        shadowColor:"grey", shadowOffset:{width:1,height:1}, shadowOpacity:10, shadowRadius:5
+      }}>
         <Text style={{fontWeight: "bold"}}>{this.props.item.id}:</Text>
-        {this.state.instances}
-        <Text>{"\n"}</Text>
+        <View style={{padding:10}}>
+          {this.state.instances}
+        </View>
       </View>
     );
   }
@@ -70,6 +72,11 @@ class ItemBox extends React.Component {
 
 class Instance extends React.Component {
   render() {
-    return <Text>{JSON.stringify(this.props.instance)}</Text>;
+    return (
+      <View style={{paddingTop:7}}>
+        <Text>${this.props.instance["price"]}:</Text>
+        <Text>{this.props.instance["date"]} at {this.props.instance["location"]}</Text>
+      </View>
+    );
   }
 }

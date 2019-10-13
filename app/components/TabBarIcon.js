@@ -5,6 +5,6 @@ import Colors from '../constants/Colors';
 
 export default function TabBarIcon(props) {
   return (
-    <Text>test</Text>
+    <Text>{props.text}</Text>
   );
 }

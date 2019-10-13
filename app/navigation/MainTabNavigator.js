@@ -23,6 +23,7 @@ HomeStack.navigationOptions = {
   tabBarLabel: 'Home',
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
+      text='~'
       focused={focused}
       name={
         Platform.OS === 'ios'
@@ -43,9 +44,11 @@ const LinksStack = createStackNavigator(
 );
 
 LinksStack.navigationOptions = {
-  tabBarLabel: 'Links',
+  tabBarLabel: 'Camera',
   tabBarIcon: ({ focused }) => (
-    <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-link' : 'md-link'} />
+    <TabBarIcon 
+      text='(|O|)'
+      focused={focused} name={Platform.OS === 'ios' ? 'ios-link' : 'md-link'} />
   ),
 };
 
@@ -59,9 +62,11 @@ const SettingsStack = createStackNavigator(
 );
 
 SettingsStack.navigationOptions = {
-  tabBarLabel: 'Settings',
+  tabBarLabel: 'Items',
   tabBarIcon: ({ focused }) => (
-    <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-options' : 'md-options'} />
+    <TabBarIcon 
+      text='='
+      focused={focused} name={Platform.OS === 'ios' ? 'ios-options' : 'md-options'} />
   ),
 };
 
