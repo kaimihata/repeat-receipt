@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text} from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import firebase, {firestore} from '../firebase';
 import {addDefaultData} from '../actions/addToFirestore';
 
@@ -7,9 +7,9 @@ export default class DataScreen extends React.Component {
   render() {
     addDefaultData();
     return (
-      <View>
+      <ScrollView>
         <ItemContainer />
-      </View>
+      </ScrollView>
     );
   }
 }

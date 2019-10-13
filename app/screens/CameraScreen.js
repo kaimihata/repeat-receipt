@@ -11,6 +11,7 @@ import firebase from '../firebase';
 import getEnvVars from '../environment';
 import uuid from 'uuid';
 import * as keywords from '../assets/keywords/keywords.json';
+import addToFirestore from '../actions/addToFirestore';
 
 export default class CameraScreen extends React.Component {
   state = {
@@ -168,7 +169,9 @@ export default class CameraScreen extends React.Component {
       }
     }
     // console.log(words);
-    this.setState({ itemObjects: this.groupLines(words, (sumDeltaY/numWords)/2) });
+    items = this.groupLines(words, (sumDeltaY / numWords) / 2);
+    this.setState({ itemObjects: items });
+    addToFirestore({ items });
   }
 
   groupLines(data, margin) {
@@ -244,11 +247,11 @@ export default class CameraScreen extends React.Component {
       }
       var obj = {
         name: title,
-        instance: [
+        instances: [
           {
             price,
             date: date.length === 0 ? null : this.extractDateFromLine(date[0]),
-            store: store.length === 0 ? null : this.extractStoreFromLine(store[0]),
+            location: store.length === 0 ? null : this.extractStoreFromLine(store[0]),
           }
         ],
       }
