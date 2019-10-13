@@ -1,0 +1,37 @@
+{
+  "store": [
+    "h mart",
+    "mcdonald ' s",
+    "macy ' s",
+    "safeway",
+    "quality food centers"
+  ],
+  "date": [
+    "2019",
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "may",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "oct",
+    "nov",
+    "dec"
+  ],
+  "non_item": [
+    "total",
+    "tax",
+    "subtotal",
+    "tax1",
+    "master",
+    "change",
+    "sub total",
+    "savings",
+    "cashless",
+    "balance",
+    "visa"
+  ]
+}
